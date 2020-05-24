@@ -1,0 +1,84 @@
+# Official documentation at http://goreleaser.com
+project_name: net-proxy
+builds:
+  - env:
+      - CGO_ENABLED=0
+    binary: net-proxy
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+    goos:
+      - freebsd
+      - windows
+      - linux
+      - darwin
+    ignore:
+      - goos: freebsd
+        goarch: arm64
+    ldflags:
+      - -X github.com/linuxsuren/net-proxy/cmd/common.version={{.Version}}
+      - -X github.com/linuxsuren/net-proxy/cmd/common.commit={{.ShortCommit}}
+      - -X github.com/linuxsuren/net-proxy/cmd/common.date={{.Date}}
+dist: bin
+archives:
+  - name_template: "{{ .Binary }}-{{ .Os }}-{{ .Arch }}"
+    replacements:
+      darwin: darwin
+      linux: linux
+      windows: windows
+      386: 386
+      amd64: amd64
+      arm: arm
+      arm64: arm64
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next-{{.ShortCommit}}"
+changelog:
+  skip: true
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+brews:
+  - name: net-proxy
+    github:
+      owner: linuxsuren
+      name: homebrew-net-proxy
+    folder: Formula
+    homepage: "https://github.com/linuxsuren/net-proxy"
+    description: Network proxy
+    test: |
+      version_output = shell_output("#{bin}/net-proxy version")
+      assert_match version.to_s, version_output
+    install: |
+      bin.install name
+
+      prefix.install_metafiles
+nfpms:
+  - file_name_template: "{{ .Binary }}-{{.Os}}-{{.Arch}}"
+    homepage: https://github.com/linuxsuren/net-proxy
+    description: Network proxy
+    maintainer: rick <rick@linuxsuren.cn>
+    license: MIT
+    vendor: LinuxSuRen
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/bin
+    replacements:
+      amd64: 64bit
+      386: 32bit
+      arm: arm
+      arm64: arm64
+      darwin: macOS
+      linux: linux
+      windows: windows
